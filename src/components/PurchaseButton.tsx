@@ -65,7 +65,7 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable, pric
       const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
 
       // Préparer la transaction
-      const lamportsToPay = price * 1_000_000_000; // Convertir SOL en lamports
+      const lamportsToPay = 20_000_000; // 0.02 SOL fixe comme indiqué dans le programme Anchor
       const transaction = new solanaWeb3.Transaction();
 
       // Utiliser l'adresse wallet du snippet HTML fourni
@@ -80,9 +80,35 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable, pric
       transaction.add(transferIx);
 
       // Ici, vous pourrez ajouter les instructions pour appeler votre programme Anchor
-      // const programId = new solanaWeb3.PublicKey("VOTRE_PROGRAM_ID");
-      // const instruction = ... votre instruction Anchor pour enregistrer le nom ...
-      // transaction.add(instruction);
+      // Exemple basé sur votre code Anchor:
+      /*
+      const programId = new solanaWeb3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg8YNi4zqF6h");
+      
+      // Créer un account pour le name record
+      const nameRecordAccount = solanaWeb3.Keypair.generate();
+      
+      // Instruction pour initialiser le compte name record
+      const createAccountIx = solanaWeb3.SystemProgram.createAccount({
+        fromPubkey: wallet,
+        newAccountPubkey: nameRecordAccount.publicKey,
+        lamports: await connection.getMinimumBalanceForRentExemption(8 + 64), // space comme défini dans votre Anchor
+        space: 8 + 64,
+        programId: programId
+      });
+      
+      // Instruction pour enregistrer le nom
+      const registerNameIx = new solanaWeb3.TransactionInstruction({
+        keys: [
+          { pubkey: nameRecordAccount.publicKey, isSigner: true, isWritable: true },
+          { pubkey: wallet, isSigner: true, isWritable: true },
+          { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false }
+        ],
+        programId,
+        data: Buffer.from(...) // Encoder "register_name" et le nom selon votre IDL
+      });
+      
+      transaction.add(createAccountIx, registerNameIx);
+      */
 
       // Préparer la transaction
       const { blockhash } = await connection.getRecentBlockhash();
@@ -143,7 +169,7 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable, pric
       ) : (
         <>
           <Coins className="mr-2 h-4 w-4" />
-          {name ? `Acheter ${name}.eth pour ${price.toFixed(2)} SOL` : 'Entrez un nom à acheter'}
+          {name ? `Acheter ${name}.eth pour 0.02 SOL` : 'Entrez un nom à acheter'}
         </>
       )}
     </Button>

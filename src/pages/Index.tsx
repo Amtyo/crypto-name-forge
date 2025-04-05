@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import NameGenerator from '@/components/NameGenerator';
 import NameDisplay from '@/components/NameDisplay';
@@ -9,30 +9,12 @@ import { Toaster } from "@/components/ui/toaster";
 const Index = () => {
   const [name, setName] = useState('');
   const [isAvailable, setIsAvailable] = useState(false);
-  const [price, setPrice] = useState(0.02);
+  const [price] = useState(0.02); // Prix fixe de 0.02 SOL selon le programme Anchor
   
   const handleNameChange = (newName: string) => {
     setName(newName);
     // Pour démo, on considère que les noms avec 5+ caractères sont disponibles
     setIsAvailable(newName.length >= 5);
-    
-    // Calcul du prix en fonction du nombre de caractères
-    // Ceci doit correspondre à la logique de votre programme Anchor
-    calculatePrice(newName);
-  };
-  
-  const calculatePrice = (name: string) => {
-    // Cette logique doit correspondre à celle de votre programme Anchor
-    // Exemple: plus le nom est court, plus il est cher
-    if (name.length <= 0) {
-      setPrice(0.02); // Prix par défaut
-    } else if (name.length <= 3) {
-      setPrice(0.05); // Les noms courts sont plus chers
-    } else if (name.length <= 5) {
-      setPrice(0.03);
-    } else {
-      setPrice(0.02); // Prix de base pour les noms longs
-    }
   };
 
   return (
@@ -58,7 +40,7 @@ const Index = () => {
               <div className="p-4 bg-slate-800/20 border border-slate-700/20 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-slate-400">Prix</span>
-                  <span className="font-bold text-white">{price.toFixed(2)} SOL</span>
+                  <span className="font-bold text-white">0.02 SOL</span>
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-slate-400">Réseau</span>

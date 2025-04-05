@@ -41,10 +41,6 @@ const Index = () => {
                   <span className="text-sm text-slate-400">Prix</span>
                   <span className="font-bold text-white">0.02 SOL</span>
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-slate-400">Période d'enregistrement</span>
-                  <span className="font-semibold text-white">1 An</span>
-                </div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-slate-400">Réseau</span>
                   <span className="font-semibold text-crypto-teal">Solana (Devnet)</span>

@@ -52,12 +52,6 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       // Créer l'objet connection Solana
       const solanaWeb3 = (window as any).solanaWeb3;
       if (!solanaWeb3) {
-        // Ajouter la librairie solana web3 à l'index.html si elle n'est pas déjà chargée
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js';
-        script.async = true;
-        document.body.appendChild(script);
-        
         toast({
           title: "Bibliothèque manquante",
           description: "Veuillez rafraîchir la page pour charger les dépendances Solana",
@@ -73,7 +67,7 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       const lamportsToPay = 20000000; // 0.02 SOL
       const transaction = new solanaWeb3.Transaction();
 
-      // Remplacer par votre adresse wallet réelle
+      // Utiliser l'adresse wallet du snippet HTML fourni
       const destinationWallet = new solanaWeb3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg8YNi4zqF6h");
 
       const transferIx = solanaWeb3.SystemProgram.transfer({
@@ -83,6 +77,11 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       });
 
       transaction.add(transferIx);
+
+      // Ici, vous pourrez ajouter les instructions pour appeler votre programme Anchor
+      // const programId = new solanaWeb3.PublicKey("VOTRE_PROGRAM_ID");
+      // const instruction = ... votre instruction Anchor pour enregistrer le nom ...
+      // transaction.add(instruction);
 
       // Préparer la transaction
       const { blockhash } = await connection.getRecentBlockhash();

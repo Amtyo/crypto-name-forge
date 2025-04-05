@@ -7,9 +7,10 @@ import { useToast } from '@/components/ui/use-toast';
 interface PurchaseButtonProps {
   name: string;
   isAvailable: boolean;
+  price: number;
 }
 
-const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) => {
+const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable, price }) => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const [txId, setTxId] = useState<string | null>(null);
@@ -64,7 +65,7 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
 
       // Préparer la transaction
-      const lamportsToPay = 20000000; // 0.02 SOL
+      const lamportsToPay = price * 1_000_000_000; // Convertir SOL en lamports
       const transaction = new solanaWeb3.Transaction();
 
       // Utiliser l'adresse wallet du snippet HTML fourni
@@ -142,7 +143,7 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       ) : (
         <>
           <Coins className="mr-2 h-4 w-4" />
-          {name ? `Acheter ${name}.eth` : 'Entrez un nom à acheter'}
+          {name ? `Acheter ${name}.eth pour ${price.toFixed(2)} SOL` : 'Entrez un nom à acheter'}
         </>
       )}
     </Button>

@@ -12,23 +12,105 @@ interface PurchaseButtonProps {
 const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
+  const [txId, setTxId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     if (!name || !isAvailable) return;
     
     setIsPurchasing(true);
-    
-    // Simulate purchase process
-    setTimeout(() => {
-      setIsPurchasing(false);
+
+    try {
+      // Vérifier si Solana est disponible
+      const solana = (window as any).solana;
+      if (!solana) {
+        toast({
+          title: "Wallet non disponible",
+          description: "Veuillez installer l'extension Phantom et vous connecter",
+          variant: "destructive",
+        });
+        setIsPurchasing(false);
+        return;
+      }
+
+      // Vérifier si l'utilisateur est connecté
+      if (!solana.isConnected) {
+        await solana.connect();
+      }
+
+      const wallet = solana.publicKey;
+      if (!wallet) {
+        toast({
+          title: "Wallet non connecté",
+          description: "Veuillez vous connecter à votre wallet Solana pour continuer",
+          variant: "destructive",
+        });
+        setIsPurchasing(false);
+        return;
+      }
+
+      // Créer l'objet connection Solana
+      const solanaWeb3 = (window as any).solanaWeb3;
+      if (!solanaWeb3) {
+        // Ajouter la librairie solana web3 à l'index.html si elle n'est pas déjà chargée
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js';
+        script.async = true;
+        document.body.appendChild(script);
+        
+        toast({
+          title: "Bibliothèque manquante",
+          description: "Veuillez rafraîchir la page pour charger les dépendances Solana",
+          variant: "destructive",
+        });
+        setIsPurchasing(false);
+        return;
+      }
+
+      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
+
+      // Préparer la transaction
+      const lamportsToPay = 20000000; // 0.02 SOL
+      const transaction = new solanaWeb3.Transaction();
+
+      // Remplacer par votre adresse wallet réelle
+      const destinationWallet = new solanaWeb3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg8YNi4zqF6h");
+
+      const transferIx = solanaWeb3.SystemProgram.transfer({
+        fromPubkey: wallet,
+        toPubkey: destinationWallet,
+        lamports: lamportsToPay,
+      });
+
+      transaction.add(transferIx);
+
+      // Préparer la transaction
+      const { blockhash } = await connection.getRecentBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = wallet;
+
+      // Signer et envoyer la transaction
+      const signed = await solana.signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(txid);
+
+      setTxId(txid);
       setIsPurchased(true);
       
       toast({
-        title: "Name purchased successfully!",
-        description: `${name}.eth is now yours!`,
+        title: "Nom acheté avec succès!",
+        description: `${name}.eth est maintenant à vous! Transaction: ${txid.slice(0, 8)}...`,
       });
-    }, 2000);
+    } catch (error: any) {
+      console.error("Erreur lors de l'achat:", error);
+      toast({
+        title: "Erreur lors de l'achat",
+        description: error.message || "Une erreur est survenue lors de la transaction",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   if (isPurchased) {
@@ -37,7 +119,12 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
         disabled
         className="w-full bg-green-600 hover:bg-green-700"
       >
-        <Check className="mr-2 h-4 w-4" /> Name Purchased
+        <Check className="mr-2 h-4 w-4" /> Nom Acheté
+        {txId && (
+          <span className="ml-2 text-xs opacity-70">
+            Tx: {txId.slice(0, 6)}...
+          </span>
+        )}
       </Button>
     );
   }
@@ -51,12 +138,12 @@ const PurchaseButton: React.FC<PurchaseButtonProps> = ({ name, isAvailable }) =>
       {isPurchasing ? (
         <>
           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          Processing...
+          Transaction en cours...
         </>
       ) : (
         <>
           <Coins className="mr-2 h-4 w-4" />
-          {name ? `Purchase ${name}.eth` : 'Enter a name to purchase'}
+          {name ? `Acheter ${name}.eth` : 'Entrez un nom à acheter'}
         </>
       )}
     </Button>
